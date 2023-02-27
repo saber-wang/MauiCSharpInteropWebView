@@ -12,11 +12,14 @@ namespace HybridWebView
 
         partial void InitializeHybridWebView()
         {
-            var wv = (WKWebView)Handler.PlatformView;
-
-            using var nsUrl = new NSUrl(AppOrigin);
-            using var request = new NSUrlRequest(nsUrl);
-            wv.LoadRequest(request);
+            if (this.Source is null)
+            {
+                var wv = (WKWebView)Handler.PlatformView;
+            
+                using var nsUrl = new NSUrl(AppOrigin);
+                using var request = new NSUrlRequest(nsUrl);
+                wv.LoadRequest(request);
+            }
         }
     }
 }

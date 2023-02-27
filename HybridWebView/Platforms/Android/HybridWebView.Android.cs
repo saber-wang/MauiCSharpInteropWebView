@@ -20,15 +20,15 @@ namespace HybridWebView
 
         private HybridWebViewJavaScriptInterface _javaScriptInterface;
 
-        async partial void InitializeHybridWebView()
+        partial void InitializeHybridWebView()
         {
             var awv = (AWebView)Handler.PlatformView;
             awv.Settings.JavaScriptEnabled = true;
 
             _javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
             awv.AddJavascriptInterface(_javaScriptInterface, "hybridWebViewHost");
-
-            awv.LoadUrl(AppOrigin);
+            if (this.Source is null)
+                awv.LoadUrl(AppOrigin);
         }
 
         private sealed class HybridWebViewJavaScriptInterface : Java.Lang.Object
