@@ -4,6 +4,12 @@ namespace HybridWebView
 {
     public partial class HybridWebView : WebView
     {
+        //todo 绑定
+        /// <summary>
+        /// 是否使用本地资源
+        /// </summary>
+        public bool UseResources { get; set; } = false;
+
         public string MainFile { get; set; }
 
         /// <summary>

@@ -27,7 +27,7 @@ namespace HybridWebView
 
             _javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
             awv.AddJavascriptInterface(_javaScriptInterface, "hybridWebViewHost");
-            if (this.Source is null)
+            if (this.UseResources)
                 awv.LoadUrl(AppOrigin);
         }
 

@@ -12,7 +12,7 @@ namespace HybridWebView
 
         partial void InitializeHybridWebView()
         {
-            if (this.Source is null)
+            if (this.UseResources)
             {
                 var wv = (WKWebView)Handler.PlatformView;
             
