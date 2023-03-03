@@ -9,7 +9,7 @@
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<VersionPrefix>0.0.1</VersionPrefix>
-		<VersionSuffix>preview5</VersionSuffix>
+		<VersionSuffix>preview6</VersionSuffix>
 		<PublishReadyToRun>false</PublishReadyToRun>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>

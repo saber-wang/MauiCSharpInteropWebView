@@ -53,9 +53,9 @@ namespace HybridWebView
 
         private sealed class MyOnTouchListener : Java.Lang.Object, Android.Views.View.IOnTouchListener
         {
-            float oldX;
+            float posX;
 
-            float newX;
+            float curposX;
 
             HybridWebView myWebView;
             public MyOnTouchListener(HybridWebView webView)
@@ -64,22 +64,24 @@ namespace HybridWebView
             }
             public bool OnTouch(Android.Views.View v, MotionEvent e)
             {
-                if (e.Action == MotionEventActions.Down)
+                switch (e.Action)
                 {
-                    oldX = e.GetX(0);
-                }
-                if (e.Action == MotionEventActions.Up)
-                {
-                    newX = e.GetX();
-
-                    if (newX - oldX > 0)
-                    {
-                        myWebView.OnSwipeRight();
-                    }
-                    else
-                    {
-                        myWebView.OnSwipeLeft();
-                    }
+                    case MotionEventActions.Down:
+                        posX = e.GetX(0);
+                        break;
+                    case MotionEventActions.Move:
+                        curposX = e.GetX(0);
+                        break;
+                    case MotionEventActions.Up:
+                        if (curposX - posX > 0 && Math.Abs(curposX - posX) > 150)
+                        { 
+                            myWebView.OnSwipeRight();
+                        }
+                        else if (curposX - posX < 0 && Math.Abs(curposX - posX) > 150)
+                        {
+                            myWebView.OnSwipeLeft();
+                        }
+                        break;
                 }
 
                 return false;

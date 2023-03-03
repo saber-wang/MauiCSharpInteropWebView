@@ -1,6 +1,4 @@
-﻿using Android.Views;
-using Microsoft.Maui.Handlers;
-using System.Reflection;
+﻿using Microsoft.Maui.Handlers;
 
 namespace HybridWebView
 {
