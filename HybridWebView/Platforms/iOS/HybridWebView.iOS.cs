@@ -14,12 +14,11 @@ namespace HybridWebView
         partial void InitializeHybridWebView()
         {
             var wv = (WKWebView)Handler.PlatformView;
-
-            UISwipeGestureRecognizer leftgestureRecognizer = new UISwipeGestureRecognizer(SwipeEvent);
-
+            
+            UISwipeGestureRecognizer leftgestureRecognizer = new(wv, new ObjCRuntime.Selector("SwipeEvent:"));
             leftgestureRecognizer.Direction = UISwipeGestureRecognizerDirection.Left;
 
-            UISwipeGestureRecognizer rightgestureRecognizer = new UISwipeGestureRecognizer(SwipeEvent);
+            UISwipeGestureRecognizer rightgestureRecognizer = new(wv, new ObjCRuntime.Selector("SwipeEvent:"));
             rightgestureRecognizer.Direction = UISwipeGestureRecognizerDirection.Right;
 
             leftgestureRecognizer.Delegate = new MyWebViewDelegate();
