@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Handlers;
+﻿using Android.Views;
+using Microsoft.Maui.Handlers;
+using System.Reflection;
 
 namespace HybridWebView
 {
@@ -23,6 +25,7 @@ namespace HybridWebView
 #if ANDROID
         public static void MapHybridWebViewClient(IWebViewHandler handler, IWebView webView)
         {
+            //Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer
             if (handler is HybridWebViewHandler platformHandler)
             {
                 var webViewClient = new AndroidHybridWebViewClient(platformHandler);
@@ -35,6 +38,7 @@ namespace HybridWebView
                 webViewClientField.SetValue(handler, webViewClient);
             }
         }
+
 #endif
-    }
+        }
 }

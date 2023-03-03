@@ -26,6 +26,16 @@ namespace HybridWebView
 
         public event EventHandler<HybridWebViewRawMessageReceivedEventArgs> RawMessageReceived;
 
+        public event EventHandler SwipeLeft;
+        public event EventHandler SwipeRight;
+
+        public void OnSwipeLeft() =>
+            SwipeLeft?.Invoke(this, null);
+
+        public void OnSwipeRight() =>
+            SwipeRight?.Invoke(this, null);
+
+
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();

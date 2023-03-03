@@ -1,4 +1,5 @@
-﻿using Android.Webkit;
+﻿using Android.Views;
+using Android.Webkit;
 using Java.Interop;
 using AWebView = Android.Webkit.WebView;
 
@@ -25,6 +26,8 @@ namespace HybridWebView
             var awv = (AWebView)Handler.PlatformView;
             awv.Settings.JavaScriptEnabled = true;
 
+            awv.SetOnTouchListener(new MyOnTouchListener(this));
+
             _javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
             awv.AddJavascriptInterface(_javaScriptInterface, "hybridWebViewHost");
             if (this.UseResources)
@@ -45,6 +48,41 @@ namespace HybridWebView
             public void SendMessage(string message)
             {
                 _hybridWebView.OnMessageReceived(message);
+            }
+        }
+
+        private sealed class MyOnTouchListener : Java.Lang.Object, Android.Views.View.IOnTouchListener
+        {
+            float oldX;
+
+            float newX;
+
+            HybridWebView myWebView;
+            public MyOnTouchListener(HybridWebView webView)
+            {
+                myWebView = webView;
+            }
+            public bool OnTouch(Android.Views.View v, MotionEvent e)
+            {
+                if (e.Action == MotionEventActions.Down)
+                {
+                    oldX = e.GetX(0);
+                }
+                if (e.Action == MotionEventActions.Up)
+                {
+                    newX = e.GetX();
+
+                    if (newX - oldX > 0)
+                    {
+                        myWebView.OnSwipeRight();
+                    }
+                    else
+                    {
+                        myWebView.OnSwipeLeft();
+                    }
+                }
+
+                return false;
             }
         }
     }
