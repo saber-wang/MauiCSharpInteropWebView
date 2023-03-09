@@ -1,12 +1,17 @@
 ﻿// Standard methods for HybridWebView
+window.nextCallbackId = 1;
+window.callbackMap = new Map();
 
 class HybridWebViewDotNetHost {
+    //constructor() {
+    //    this.nextCallbackId = 1;
+    //    this.callbackMap = new Map();
+    //}
     // TODO: Create a psudo private constructor to allow for only
     // a single instance of HybridWebViewDotNetHost
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields#simulating_private_constructors
-    static Current = new HybridWebViewDotNetHost();
-    #nextCallbackId = 1;
-    #callbackMap = new Map();
+    //static Current = new HybridWebViewDotNetHost();
+    
 
     // Methods
     SendRawMessageToDotNet(message) {
@@ -58,7 +63,7 @@ class HybridWebViewDotNetHost {
     }
 
     ResolveCallback(id, message) {
-        const callback = this.#callbackMap.get(id);
+        const callback = window.callbackMap.get(id);
 
         if (callback) {
             const obj = JSON.parse(message);
@@ -67,7 +72,7 @@ class HybridWebViewDotNetHost {
     }
 
     RejectCallback(id, message) {
-        const callback = this.#callbackMap.get(id);
+        const callback = window.callbackMap.get(id);
 
         if (callback) {
             callback.resolve(message);
@@ -77,17 +82,18 @@ class HybridWebViewDotNetHost {
     CreateCallback() {
         let callback = {};
 
-        callback.id = this.#nextCallbackId++;
+        callback.id = window.nextCallbackId++;
         callback.promise = new Promise((resolve, reject) => {
             callback.resolve = resolve;
             callback.reject = reject;
         });;
 
-        this.#callbackMap.set(callback.id, callback);
+        window.callbackMap.set(callback.id, callback);
 
         return callback;
     }
 }
 
+window.__MediJSBridge__ = new HybridWebViewDotNetHost();
 // Default instance, allow users to set the instance on their own
-window.HybridWebView = HybridWebViewDotNetHost.Current;
+window.HybridWebView = window.__MediJSBridge__;

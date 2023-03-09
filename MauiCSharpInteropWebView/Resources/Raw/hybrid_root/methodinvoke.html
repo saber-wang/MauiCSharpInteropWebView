@@ -18,7 +18,7 @@
                 HybridWebView.SendInvokeMessageToDotNet("host", "CallMeFromScript", ["msg from js", 987]);
 
                 const hostObj = HybridWebView.CreateProxy("host");
-                const result = await hostObj.CallMeFromScriptReturn("Hello", 42);
+                const result = await hostObj.CallMeFromScriptReturn("Hello", 42,9);
 
                 Log("Method call Result was " + result);
             }

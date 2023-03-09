@@ -14,7 +14,9 @@ namespace HybridWebView
         partial void InitializeHybridWebView()
         {
             var wv = (WKWebView)Handler.PlatformView;
-            
+
+            //UIPanGestureRecognizer
+
             UISwipeGestureRecognizer leftgestureRecognizer = new(wv, new ObjCRuntime.Selector("SwipeEvent:"));
             leftgestureRecognizer.Direction = UISwipeGestureRecognizerDirection.Left;
 

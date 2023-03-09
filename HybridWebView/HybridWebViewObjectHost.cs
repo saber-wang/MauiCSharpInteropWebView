@@ -161,7 +161,7 @@ namespace HybridWebView
                 return;
             }
 
-            _webView.EvaluateJavaScriptAsync($"HybridWebViewDotNetHost.Current.ResolveCallback({id}, '{json}')").ContinueWith(t =>
+            _webView.EvaluateJavaScriptAsync($"__MediJSBridge__.ResolveCallback({id}, '{json}')").ContinueWith(t =>
             {
                 if(t.Status == TaskStatus.Faulted)
                 {
@@ -179,7 +179,7 @@ namespace HybridWebView
                 return;
             }
 
-            _webView.EvaluateJavaScriptAsync($"HybridWebViewDotNetHost.Current.RejectCallback({id}, '{message}')").ContinueWith(t =>
+            _webView.EvaluateJavaScriptAsync($"__MediJSBridge__.RejectCallback({id}, '{message}')").ContinueWith(t =>
             {
                 if (t.Status == TaskStatus.Faulted)
                 {

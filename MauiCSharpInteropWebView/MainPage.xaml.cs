@@ -74,7 +74,7 @@ public partial class MainPage : ContentPage
         {
             _mainPage.WriteToLog($"I'm a .NET method called from JavaScript with message='{message}' and value={value} and optional={optional}");
             
-            await Task.Delay(50);            
+            await Task.Delay(50);
 
             return value;
         }
