@@ -14,10 +14,11 @@ namespace HybridWebView
         private readonly ConcurrentDictionary<string, object> _hostObjects = new();
 
         private readonly WebView _webView;
-
-        internal HybridWebViewObjectHost(WebView webView)
+        private readonly JsonSerializerOptions _options;
+        internal HybridWebViewObjectHost(WebView webView, JsonSerializerOptions options)
         {
             _webView = webView;
+            _options = options;
         }
 
         /// <summary>
@@ -86,7 +87,7 @@ namespace HybridWebView
                         break;
 
                     default:
-                        ResolveCallback(invokeData.CallbackId, JsonSerializer.Serialize(returnValue));
+                        ResolveCallback(invokeData.CallbackId, JsonSerializer.Serialize(returnValue, _options));
                         break;
                 }
             }
@@ -96,7 +97,7 @@ namespace HybridWebView
             }
         }
 
-        private static object[] GetMethodParams(string className, string methodName, MethodInfo invokeMethod, string[] paramValues)
+        private object[] GetMethodParams(string className, string methodName, MethodInfo invokeMethod, string[] paramValues)
         {
             var dotNetMethodParams = invokeMethod.GetParameters();
 
@@ -120,7 +121,7 @@ namespace HybridWebView
             if (dotNetMethodParams.Length == paramValues.Length)
             {
                 return paramValues
-                    .Zip(dotNetMethodParams, (s, p) => JsonSerializer.Deserialize(s, p.ParameterType))
+                    .Zip(dotNetMethodParams, (s, p) => JsonSerializer.Deserialize(s, p.ParameterType, _options))
                     .ToArray();
             }
 
@@ -131,7 +132,7 @@ namespace HybridWebView
             {
                 var paramType = dotNetMethodParams[i].ParameterType;
                 var paramValue = paramValues[i];
-                methodParams[i] = JsonSerializer.Deserialize(paramValue, paramType);
+                methodParams[i] = JsonSerializer.Deserialize(paramValue, paramType, _options);
             }
 
             Array.Fill(methodParams, Type.Missing, paramValues.Length, missingParams);
@@ -139,7 +140,7 @@ namespace HybridWebView
             return methodParams;
         }
 
-        private async Task ResolveTask(int callbackId, Task task)
+        private async Task ResolveTask(string callbackId, Task task)
         {
             await task;
 
@@ -150,10 +151,10 @@ namespace HybridWebView
                 result = task.GetType().GetProperty("Result").GetValue(task);
             }
 
-            ResolveCallback(callbackId, JsonSerializer.Serialize(result));
+            ResolveCallback(callbackId, JsonSerializer.Serialize(result, _options));
         }
 
-        private void ResolveCallback(int id, string json)
+        private void ResolveCallback(string id, string json)
         {
             if (_webView.Dispatcher.IsDispatchRequired)
             {
@@ -161,7 +162,7 @@ namespace HybridWebView
                 return;
             }
 
-            _webView.EvaluateJavaScriptAsync($"__MediJSBridge__.ResolveCallback({id}, '{json}')").ContinueWith(t =>
+            _webView.EvaluateJavaScriptAsync($"__MediJSBridge__.ResolveCallback('{id}', '{json}')").ContinueWith(t =>
             {
                 if(t.Status == TaskStatus.Faulted)
                 {
@@ -171,7 +172,7 @@ namespace HybridWebView
             });
         }
 
-        private void RejectCallback(int id, string message)
+        private void RejectCallback(string id, string message)
         {
             if (_webView.Dispatcher.IsDispatchRequired)
             {
@@ -179,7 +180,7 @@ namespace HybridWebView
                 return;
             }
 
-            _webView.EvaluateJavaScriptAsync($"__MediJSBridge__.RejectCallback({id}, '{message}')").ContinueWith(t =>
+            _webView.EvaluateJavaScriptAsync($"__MediJSBridge__.RejectCallback('{id}', '{message}')").ContinueWith(t =>
             {
                 if (t.Status == TaskStatus.Faulted)
                 {
@@ -193,7 +194,7 @@ namespace HybridWebView
         {
             public string ClassName { get; set; }
             public string MethodName { get; set; }
-            public int CallbackId { get; set; }
+            public string CallbackId { get; set; }
             public string[] ParamValues { get; set; }
         }
     }

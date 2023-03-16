@@ -28,6 +28,22 @@ namespace HybridWebView
         public event EventHandler SwipeLeft;
         public event EventHandler SwipeRight;
 
+        private readonly JsonSerializerOptions _options=new(JsonSerializerDefaults.Web);
+
+        /// <summary>
+        /// 为前端发送事件
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public Task OnMessageCallback(string type, object message)
+        {
+           return InvokeJsMethodAsync("__MediJSBridge__.OnMessageCallback", new EventMessage
+            {
+                Type = type,
+                Data = message
+            });
+        }
+
         public void OnSwipeLeft() =>
             SwipeLeft?.Invoke(this, null);
 
@@ -37,7 +53,7 @@ namespace HybridWebView
 
         public HybridWebView()
         {
-            ObjectHost = new HybridWebViewObjectHost(this);
+            ObjectHost = new HybridWebViewObjectHost(this, _options);
         }
 
         protected override void OnHandlerChanged()
@@ -63,7 +79,7 @@ namespace HybridWebView
                 throw new ArgumentException($"The method name cannot be null or empty.", nameof(methodName));
             }
 
-            return await EvaluateJavaScriptAsync($"{methodName}({(paramValues == null ? string.Empty : string.Join(", ", paramValues.Select(v => JsonSerializer.Serialize(v))))})");
+            return await EvaluateJavaScriptAsync($"{methodName}({(paramValues == null ? string.Empty : string.Join(", ", paramValues.Select(v => JsonSerializer.Serialize(v, _options))))})");
         }
 
         /// <summary>
@@ -78,7 +94,7 @@ namespace HybridWebView
         {
             var stringResult = await InvokeJsMethodAsync(methodName, paramValues);
 
-            return JsonSerializer.Deserialize<TReturnType>(stringResult);
+            return JsonSerializer.Deserialize<TReturnType>(stringResult, _options);
         }
 
         // TODO: Better name of this method
@@ -89,14 +105,14 @@ namespace HybridWebView
 
         protected virtual void OnMessageReceived(string message)
         {
-            var messageData = JsonSerializer.Deserialize<WebMessageData>(message);
+            var messageData = JsonSerializer.Deserialize<WebMessageData>(message, _options);
             switch (messageData.MessageType)
             {
                 case 0: // "raw" message (just a string)
                     RawMessageReceived?.Invoke(this, new HybridWebViewRawMessageReceivedEventArgs(messageData.MessageContent));
                     break;
                 case 1: // "invoke" message
-                    var invokeData = JsonSerializer.Deserialize<HybridWebViewObjectHost.JSInvokeMethodData>(messageData.MessageContent);
+                    var invokeData = JsonSerializer.Deserialize<HybridWebViewObjectHost.JSInvokeMethodData>(messageData.MessageContent, _options);
                     ObjectHost.InvokeDotNetMethod(invokeData);
                     break;
                 default:
@@ -132,5 +148,12 @@ namespace HybridWebView
             }
             return await FileSystem.OpenAppPackageFileAsync(assetPath);
         }
+        class EventMessage
+        {
+            public string Type { get; set; }
+
+            public object Data { get; set; }
+        }
     }
+
 }

@@ -25,7 +25,7 @@ namespace HybridWebView
         {
             var awv = (AWebView)Handler.PlatformView;
             awv.Settings.JavaScriptEnabled = true;
-
+            AWebView.SetWebContentsDebuggingEnabled(true);
             awv.SetOnTouchListener(new MyOnTouchListener(this));
 
             _javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
