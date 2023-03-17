@@ -45,16 +45,35 @@ namespace HybridWebView
             return _hostObjects.TryRemove(name, out _);
         }
 
+        private bool CanUse(JSInvokeMethodData invokeData)
+        {
+            if (!_hostObjects.TryGetValue(invokeData.ClassName, out var target))
+            {
+                return false;
+            }
+            if(invokeData.ParamValues==null || invokeData.ParamValues.Length<=0)
+                return false;
+
+            var invokeMethod = target.GetType().GetMethod(invokeData.ParamValues.FirstOrDefault(), BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
+            return invokeMethod != null;
+        }
+
         internal void InvokeDotNetMethod(JSInvokeMethodData invokeData)
         {
             //TODO: validate invokeData
-            if(!_hostObjects.ContainsKey(invokeData.ClassName))
+            if (!_hostObjects.ContainsKey(invokeData.ClassName))
             {
                 // Give the user an opportunity to call AddObject
                 ResolveObject?.Invoke(this, new HybridWebViewResolveObjectEventArgs { ObjectName = invokeData.ClassName, Host = this });
             }
 
-            if(!_hostObjects.TryGetValue(invokeData.ClassName, out var target))
+            if (invokeData.MethodName.Equals(nameof(CanUse)))
+            {
+                ResolveCallback(invokeData.CallbackId, JsonSerializer.Serialize(CanUse(invokeData), _options));
+                return;
+            }
+
+            if (!_hostObjects.TryGetValue(invokeData.ClassName, out var target))
             {
                 RejectCallback(invokeData.CallbackId, $"Invalid class name {invokeData.ClassName}.");
 
@@ -63,7 +82,7 @@ namespace HybridWebView
 
             var invokeMethod = target.GetType().GetMethod(invokeData.MethodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
 
-            if(invokeMethod == null)
+            if (invokeMethod == null)
             {
                 RejectCallback(invokeData.CallbackId, $"Invalid method {invokeData.ClassName}.{invokeData.MethodName}.");
 
@@ -164,11 +183,11 @@ namespace HybridWebView
 
             _webView.EvaluateJavaScriptAsync($"__MediJSBridge__.ResolveCallback('{id}', '{json}')").ContinueWith(t =>
             {
-                if(t.Status == TaskStatus.Faulted)
+                if (t.Status == TaskStatus.Faulted)
                 {
                     //TODO: Report error, add a new event maybe?
                     var ex = t.Exception;
-                }                
+                }
             });
         }
 
