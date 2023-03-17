@@ -81,6 +81,8 @@ namespace HybridWebView
                         {
                             myWebView.OnSwipeLeft();
                         }
+                        //重置为当前位置
+                        curposX= e.GetX(0);
                         break;
                 }
 
