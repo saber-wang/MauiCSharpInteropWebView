@@ -68,6 +68,8 @@ namespace HybridWebView
                 {
                     case MotionEventActions.Down:
                         posX = e.GetX(0);
+                        //重置为当前位置
+                        curposX = e.GetX(0);
                         break;
                     case MotionEventActions.Move:
                         curposX = e.GetX(0);
@@ -81,8 +83,7 @@ namespace HybridWebView
                         {
                             myWebView.OnSwipeLeft();
                         }
-                        //重置为当前位置
-                        curposX= e.GetX(0);
+
                         break;
                 }
 
