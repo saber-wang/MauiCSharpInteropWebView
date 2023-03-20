@@ -54,7 +54,7 @@ namespace HybridWebView
             if(invokeData.ParamValues==null || invokeData.ParamValues.Length<=0)
                 return false;
 
-            var invokeMethod = target.GetType().GetMethod(invokeData.ParamValues.FirstOrDefault(), BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
+            var invokeMethod = target.GetType().GetMethod(JsonSerializer.Deserialize<string>(invokeData.ParamValues.FirstOrDefault(),_options), BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
             return invokeMethod != null;
         }
 
