@@ -37,7 +37,13 @@ namespace HybridWebView
         /// <returns></returns>
         public Task OnMessageCallback(string type, object message)
         {
-           return InvokeJsMethodAsync("__MediJSBridge__.OnMessageCallback", new EventMessage
+            if (this.Dispatcher.IsDispatchRequired)
+            {
+                this.Dispatcher.Dispatch(() => { OnMessageCallback(type, message); });
+                return Task.CompletedTask;
+            }
+
+            return InvokeJsMethodAsync("__MediJSBridge__.OnMessageCallback", new EventMessage
             {
                 Type = type,
                 Data = message

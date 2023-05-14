@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
+using System.Web;
 
 namespace HybridWebView
 {
@@ -112,7 +113,8 @@ namespace HybridWebView
             }
             catch (Exception ex)
             {
-                RejectCallback(invokeData.CallbackId, ex.ToString());
+                LogError(ex.ToString());
+                RejectCallback(invokeData.CallbackId, ex.Message);
             }
         }
 
@@ -200,6 +202,24 @@ namespace HybridWebView
             }
 
             _webView.EvaluateJavaScriptAsync($"__MediJSBridge__.RejectCallback('{id}', '{message}')").ContinueWith(t =>
+            {
+                if (t.Status == TaskStatus.Faulted)
+                {
+                    //TODO: Report error, add a new event maybe?
+                    var ex = t.Exception;
+                }
+            });
+        }
+
+        private void LogError(string message)
+        {
+            if (_webView.Dispatcher.IsDispatchRequired)
+            {
+                _webView.Dispatcher.Dispatch(() => { LogError(message); });
+                return;
+            }
+
+            _webView.EvaluateJavaScriptAsync($"console.error('{message}')").ContinueWith(t =>
             {
                 if (t.Status == TaskStatus.Faulted)
                 {
