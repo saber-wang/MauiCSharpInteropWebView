@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace HybridWebView
 {
@@ -28,25 +29,21 @@ namespace HybridWebView
         public event EventHandler SwipeLeft;
         public event EventHandler SwipeRight;
 
-        private readonly JsonSerializerOptions _options=new(JsonSerializerDefaults.Web);
+        private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web) { Encoder= JavaScriptEncoder .UnsafeRelaxedJsonEscaping};
 
         /// <summary>
         /// 为前端发送事件
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public Task OnMessageCallback(string type, object message)
+        public Task<string> OnMessageCallback(string type, object message)
         {
-            if (this.Dispatcher.IsDispatchRequired)
-            {
-                this.Dispatcher.Dispatch(() => { OnMessageCallback(type, message); });
-                return Task.CompletedTask;
-            }
-
-            return InvokeJsMethodAsync("__MediJSBridge__.OnMessageCallback", new EventMessage
-            {
-                Type = type,
-                Data = message
+           return MainThread.InvokeOnMainThreadAsync(() => {
+                return InvokeJsMethodAsync("__MediJSBridge__.OnMessageCallback", new EventMessage
+                {
+                    Type = type,
+                    Data = message
+                });
             });
         }
 
@@ -101,6 +98,42 @@ namespace HybridWebView
             var stringResult = await InvokeJsMethodAsync(methodName, paramValues);
 
             return JsonSerializer.Deserialize<TReturnType>(stringResult, _options);
+        }
+
+        public void LogInfo(string message)
+        {
+            if (this.Dispatcher.IsDispatchRequired)
+            {
+                this.Dispatcher.Dispatch(() => { LogInfo(message); });
+                return;
+            }
+
+            this.EvaluateJavaScriptAsync($"console.log('{message}')").ContinueWith(t =>
+            {
+                if (t.Status == TaskStatus.Faulted)
+                {
+                    //TODO: Report error, add a new event maybe?
+                    var ex = t.Exception;
+                }
+            });
+        }
+
+        public void LogError(string message)
+        {
+            if (this.Dispatcher.IsDispatchRequired)
+            {
+                this.Dispatcher.Dispatch(() => { LogError(message); });
+                return;
+            }
+
+            this.EvaluateJavaScriptAsync($"console.error('{message}')").ContinueWith(t =>
+            {
+                if (t.Status == TaskStatus.Faulted)
+                {
+                    //TODO: Report error, add a new event maybe?
+                    var ex = t.Exception;
+                }
+            });
         }
 
         // TODO: Better name of this method

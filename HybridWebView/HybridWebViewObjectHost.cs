@@ -211,7 +211,7 @@ namespace HybridWebView
             });
         }
 
-        private void LogError(string message)
+        public void LogError(string message)
         {
             if (_webView.Dispatcher.IsDispatchRequired)
             {
